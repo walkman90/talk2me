@@ -2,6 +2,7 @@ package com.talktome.services;
 
 import com.talktome.beans.UserVO;
 import org.jivesoftware.smack.AccountManager;
+import org.jivesoftware.smack.SmackConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
@@ -11,10 +12,7 @@ import org.jivesoftware.smackx.search.UserSearchManager;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by vokl0313 on 9/25/14.
@@ -49,10 +47,11 @@ public class XMPPService {
 //                config.setCompressionEnabled(false);
 //                config.setCustomSSLContext(SSLContext.getDefault());
 //                config.setSecurityMode(org.jivesoftware.smack.ConnectionConfiguration.SecurityMode.disabled);
+                SmackConfiguration.setPacketReplyTimeout(10000);
                 connection = new XMPPConnection("wsua-01832");
                 connection.connect();
                // if(!connection.isAuthenticated()) {
-                    connection.login("admin", "admin", "Smack");
+                    connection.login("admin", "admin");
                // }
 
             } catch (XMPPException e) {
@@ -64,7 +63,7 @@ public class XMPPService {
             try {
                 connection.connect();
              //   if(!connection.isAuthenticated()) {
-                    connection.login("admin", "admin", "Smack");
+                    connection.login("admin", "admin");
              //   }
             } catch (XMPPException e) {
                 e.printStackTrace();
@@ -83,7 +82,7 @@ public class XMPPService {
         accountManager.createAccount(username, password, attr);
     }
 
-    public UserVO findUserBy(String value, UserColumn column) throws XMPPException {
+    public ArrayList<UserVO> findUserBy(String value, UserColumn column) throws XMPPException {
         XMPPConnection conn = getConnection();
         UserSearchManager search = new UserSearchManager(conn);
         Form searchForm = search.getSearchForm("search." + conn.getServiceName());
@@ -92,11 +91,11 @@ public class XMPPService {
         answerForm.setAnswer("search", value);
         org.jivesoftware.smackx.ReportedData data = search.getSearchResults(answerForm, "search." + conn.getServiceName());
 
-        UserVO user = null;
+        ArrayList<UserVO> users = new ArrayList<UserVO>();
         if (data.getRows() != null) {
             Iterator<ReportedData.Row> it = data.getRows();
             while (it.hasNext()) {
-                user = new UserVO();
+                UserVO user = new UserVO();
                 ReportedData.Row row = it.next();
                 Iterator iterator = row.getValues(UserColumn.USER_JID.getValue());
                 if (iterator.hasNext()) {
@@ -123,8 +122,8 @@ public class XMPPService {
                     field.setAccessible(true);
                     if (field != null) {
                         String fieldValue = (String) field.get(user);
-                        if (!fieldValue.equals(value)) {
-                            user = null;
+                        if (fieldValue.contains(value)) {
+                            users.add(user);
                         }
                     }
                     field.setAccessible(false);
@@ -137,7 +136,7 @@ public class XMPPService {
             }
         }
 
-        return user;
+        return users;
     }
 
     public void sendPresenceTo(String username,Presence.Type type) throws XMPPException {

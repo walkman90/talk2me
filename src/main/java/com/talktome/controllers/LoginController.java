@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.Collection;
 
 @Controller
@@ -28,7 +29,7 @@ public class LoginController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String printWelcome(ModelMap model) throws XMPPException {
 		model.addAttribute("message", "Welcome!");
-        UserVO user = xmppService.findUserBy("test1", XMPPService.UserColumn.USER_NAME);
+        ArrayList<UserVO> users = xmppService.findUserBy("test", XMPPService.UserColumn.USER_NAME);
         //xmppService.createAccount("test3", "test3");
 		return "login/view";
 	}
@@ -47,6 +48,14 @@ public class LoginController {
         }
 
         return "login/chat";
+    }
+
+    @RequestMapping(value="search", method=RequestMethod.POST)
+    public String search(Model model, @RequestParam("value") String value) throws XMPPException {
+        ArrayList<UserVO> users = xmppService.findUserBy(value, XMPPService.UserColumn.USER_NAME);
+        model.addAttribute("users", users);
+
+        return "login/search.result";
     }
 
     @RequestMapping(value="sendPresence", method=RequestMethod.POST)

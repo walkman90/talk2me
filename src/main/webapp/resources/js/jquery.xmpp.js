@@ -588,7 +588,8 @@
         */
         getRoster: function(callback){
 			//Some XMPP server send a blank list. Use onIq in these cases
-            var msg = "<iq type='get'><query xmlns='jabber:iq:roster'/></iq>";
+            id = MD5.hexdigest(this.jid);
+            var msg = "<iq from='" + this.jid + "' id='" + id + "' type='get'><query xmlns='jabber:iq:roster'/></iq>";
             this.sendCommand(msg,function(data){
                 var roster = [];
                 $.each($(data).find("item"), function(i,item){
