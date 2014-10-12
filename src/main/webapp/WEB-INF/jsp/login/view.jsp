@@ -103,7 +103,7 @@
             var password = $("#pass").val();
 
 
-            var url = "http://127.0.0.1:7070/http-bind/";
+            var url = "http://wsua-01832:7070/http-bind/";
             $.xmpp.connect({url: url, jid: jid, password: password,
                 onConnect: function () {
                     logContainer.html("Connected");
@@ -119,9 +119,9 @@
                     } else if(presence.show == 'subscribed' || presence.show == 'unsubscribe' || presence.show == 'unsubscribed') {
 
                     } else {
-                       var contact = contactList.where({jid: presence.from});
+                       var contact = contacts.findWhere({jid: presence.from});
                        if(!contact) {
-                           contactList.add(new Contact({jid: presence.from, username: presence.from, status: presence.show}));
+                           contacts.add(new Contact({jid: presence.from, username: presence.from, status: presence.show}));
                        } else {
                            contact.set('status', presence.show);
                        }
@@ -242,9 +242,9 @@
             for (var i = 0; i < roster.length; i++) {
                 user = roster[i];
                 if (user.subscription == "from" || user.subscription == "to") {
-                    var contactModel = contactList.where({jid: user.jid});
+                    var contactModel = contacts.findWhere({jid: user.jid});
                     if(!contactModel) {
-                        contactList.add(new Contact({jid: user.jid, username: user.jid, status: "offline"}));
+                        contacts.add(new Contact({jid: user.jid, username: user.jid, status: "offline"}));
                     }
                     var contact = $("<li>");
                     contact.append("<a jid='"+ user.jid +"'  href='javascript:void(0)'>" + user.jid + "</a><div class='status'>none</div>");
