@@ -640,12 +640,14 @@
                 try{
                     var e = $(element);
                     var status;
+                    var type;
                     if(e.attr("type") != null){
-						status = e.attr("type")
+						type = e.attr("type")
 					}else{
-						status = e.find("show").html()
+						type = 'available'
 					}
-                    xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), show: status});
+                    status = e.find("show").html()
+                    xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), status: status, type:type});
                 }catch(e){}
             });
         },

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
+import java.util.ArrayList;
 
 /**
  * Created by vokl0313 on 9/26/14.
@@ -25,13 +26,13 @@ public class UniqueNameConstraintValidator implements ConstraintValidator<Unique
         if(usernameField == null) {
             return false;
         }
-        UserVO user = null;
+        ArrayList<UserVO> users = null;
         try {
-            user = xmppService.findUserBy(usernameField, XMPPService.UserColumn.USER_USERNAME);
+             users = xmppService.findUserBy(usernameField, XMPPService.UserColumn.USER_USERNAME);
         } catch (XMPPException e) {
             e.printStackTrace();
         }
-        return user == null;
+        return users.size() == 0;
     }
 
 }

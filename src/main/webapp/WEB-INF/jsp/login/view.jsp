@@ -74,12 +74,13 @@
             defaults : {
                 jid: "test",
                 username: "test",
-                status : "offline"
+                state: "unavailable",
+                status : "none"
             },
             initialize: function(){
-                this.on("change:status", function(model){
-                    var st = model.get("status");
-                    contactList.find("li a[jid="+this.jid+"]").next().html(st);
+                this.on("change:state", function(model){
+                    var jid = model.get("jid");
+                    contactList.find("li a[jid='"+jid+"']").next().html(model.get("state"));
                 });
             }
         });
@@ -91,7 +92,9 @@
 
         ContactList.prototype.add = function(newContact) {
             var isDupe = this.any(function(contact) {
-                return contact.get('jid') === newContact.get('jid');
+                var jid = contact.get('jid');
+                jid = jid.substr(0, jid.indexOf('/'));
+                return jid === newContact.get('jid');
             });
             if (isDupe) return;
             Backbone.Collection.prototype.add.call(this, newContact);
@@ -107,23 +110,25 @@
             $.xmpp.connect({url: url, jid: jid, password: password,
                 onConnect: function () {
                     logContainer.html("Connected");
-                    $.xmpp.setPresence("available");
+                    $.xmpp.setPresence(null);
 
                     loadContactList(contactList);
                 },
                 onPresence: function (presence) {
-                    if (presence.show == 'subscribe') {
+                    var jid = jidTrim(presence.from);
+                    if (presence.type == 'subscribe') {
                         var notifications = $('body').find('#notification');
                         notifications.html(" Subscription from: " + presence.from + "<button id='accept-btn' onclick='acceptSubscription($(this))'>Accept</button><button id='refuse-btn'>Refuse</button></div>");
                         notifications.find('#accept-btn').attr('jid', presence.from);
-                    } else if(presence.show == 'subscribed' || presence.show == 'unsubscribe' || presence.show == 'unsubscribed') {
+                    } else if(presence.type == 'subscribed' || presence.type == 'unsubscribe' || presence.type == 'unsubscribed') {
 
                     } else {
-                       var contact = contactList.where({jid: presence.from});
+                       var contact = contacts.findWhere({jid: jid});
                        if(!contact) {
-                           contactList.add(new Contact({jid: presence.from, username: presence.from, status: presence.show}));
+                           contacts.add(new Contact({jid: jid, username: presence.from, status: presence.status, state:presence.type}));
                        } else {
-                           contact.set('status', presence.show);
+                           contact.set('status', presence.status);
+                           contact.set('state', presence.type);
                        }
                     }
                 },
@@ -242,12 +247,12 @@
             for (var i = 0; i < roster.length; i++) {
                 user = roster[i];
                 if (user.subscription == "from" || user.subscription == "to") {
-                    var contactModel = contactList.where({jid: user.jid});
+                    var contactModel = contacts.findWhere({jid: user.jid});
                     if(!contactModel) {
-                        contactList.add(new Contact({jid: user.jid, username: user.jid, status: "offline"}));
+                        contacts.add(new Contact({jid: user.jid, username: user.jid, status: "none", state:"unavailable"}));
                     }
                     var contact = $("<li>");
-                    contact.append("<a jid='"+ user.jid +"'  href='javascript:void(0)'>" + user.jid + "</a><div class='status'>none</div>");
+                    contact.append("<a jid='"+ user.jid +"'  href='javascript:void(0)'>" + user.jid + "</a><div class='state'>none</div>");
                     contact.find("a").on('click', function () {
                         var jid = $(this).attr('jid');
                         var id = MD5.hexdigest(jid);
@@ -273,6 +278,10 @@
                 input.val("");
             });
             $("body").append(chat);
+        }
+
+        function jidTrim(jid) {
+            return jid.substr(0, jid.indexOf('/'));
         }
     });
 
