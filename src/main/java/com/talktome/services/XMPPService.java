@@ -48,7 +48,7 @@ public class XMPPService {
 //                config.setCustomSSLContext(SSLContext.getDefault());
 //                config.setSecurityMode(org.jivesoftware.smack.ConnectionConfiguration.SecurityMode.disabled);
                 SmackConfiguration.setPacketReplyTimeout(10000);
-                connection = new XMPPConnection("wsua-01832");
+                connection = new XMPPConnection("localhost");
                 connection.connect();
                // if(!connection.isAuthenticated()) {
                     connection.login("admin", "admin");

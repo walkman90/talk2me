@@ -1,5 +1,20 @@
-#notification {
+#container {
+    height: 100%;
+}
+
+#container #notification {
     position: fixed;
-    border-top: 0;
+    bottom: 0;
     right: 0;
+    padding: 14px;
+    border: 1px solid #ccc;
+    display: none;
+}
+
+#container #notification button {
+    margin-left: 5px;
+}
+
+#container #notification .msg {
+    margin-right: 5px;
 }

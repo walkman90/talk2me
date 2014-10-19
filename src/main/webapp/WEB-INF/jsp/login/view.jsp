@@ -69,8 +69,10 @@
 
 <script type="text/javascript">
 $(document).ready(function () {
+    var $model = $model || {};
+    var $view = $view || {};
     var logContainer = $("#log");
-    var contactList = $("#contacts");
+    $view.contactList = $("#contacts");
 
     var Contact = Backbone.Model.extend({
         defaults: {
@@ -82,7 +84,7 @@ $(document).ready(function () {
         initialize: function () {
             this.on("change:state", function (model) {
                 var jid = model.get("jid");
-                contactList.find("li a[jid='" + jid + "']").next().html(model.get("state"));
+                $view.contactList.find("li a[jid='" + jid + "']").next().html(model.get("state"));
             });
         }
     });
@@ -101,7 +103,28 @@ $(document).ready(function () {
         Backbone.Collection.prototype.add.call(this, newContact);
     }
 
-    var contacts = new ContactList();
+    var User = Backbone.Model.extend({
+        defaults: {
+            jid: "test",
+            username: "test",
+            state: "unavailable",
+            status: "none",
+            incomingContactRequests: new Array(),
+            outgoingContactRequests: new Array(),
+            contacts: new ContactList()
+        },
+        initialize: function () {
+            this.on("change:state", function (model) {
+                var jid = model.get("jid");
+                $view.contactList.find("li a[jid='" + jid + "']").next().html(model.get("state"));
+            });
+        }
+    });
+
+
+
+    $model.user = new User();
+   // $model.user.contacts = new ContactList();
     var subscribedToList = [];
 
     $("#connectBut").click(function () {
@@ -115,29 +138,44 @@ $(document).ready(function () {
                 logContainer.html("Connected");
                 $.xmpp.setPresence(null);
 
-                loadContactList(contactList);
+                loadContactList($view.contactList);
             },
             onPresence: function (presence) {
                 var jid = jidTrim(presence.from);
+                outRequests = $model.user.get('outgoingContactRequests');
+                inRequests = $model.user.get('incomingContactRequests');
                 if (presence.type == 'subscribe') {
-                    if ($.inArray(jid, subscribedToList) != -1) {
-                        subscriptionAutoResponse(jid);
+                    if ($.inArray(jid, outRequests) != -1) {
+                        subscriptionAutoResponse(jid, 'subscribed');
+                        $model.user.get('outgoingContactRequests').pop(jid);
+                    } else if ($.inArray(jid, inRequests) != -1) {
+                        subscriptionAutoResponse(jid, 'subscribed');
+                        $model.user.get('incomingContactRequests').pop(jid);
                     } else {
-                        var notifications = $('body').find('#notification');
-                        notifications.html(" Subscription from: " + presence.from + "<button id='accept-btn' onclick='$(\"body\").trigger(\"acceptSubscription\", [\""+jid+"\"])'>Accept</button><button id='refuse-btn'>Refuse</button></div>");
-                        notifications.find('#accept-btn').attr('jid', presence.from);
+                        var notification = $('body').find('#notification');
+                        notification.html("<div class='msg'> Subscription from: " + presence.from + "</div><button class='btn btn-primary btn-xs' id='accept-btn' onclick='$(\"body\").trigger(\"acceptSubscription\", [\""+jid+"\"])'>Accept</button><button class='btn btn-default btn-xs'>Refuse</button>");
+                        notification.find('#accept-btn').attr('jid', presence.from);
+                        notification.show("slow");
                     }
-                } else if (presence.type == 'subscribed' || presence.type == 'unsubscribe' || presence.type == 'unsubscribed') {
+                } else if (presence.type == 'subscribed') {
 
+                    if ($.inArray(jid, outRequests) != -1) {
+                        subscriptionAutoResponse(jid, 'subscribe');
+                        $model.user.get('outgoingContactRequests').pop(jid);
+                    } else if ($.inArray(jid, inRequests) != -1) {
+                        subscriptionAutoResponse(jid, 'subscribe');
+                        $model.user.get('incomingContactRequests').pop(jid);
+                    }
                 } else {
-                    var contact = contacts.findWhere({jid: jid});
+                    var contact =  $model.user.get('contacts').findWhere({jid: jid});
                     if (!contact) {
-                        contacts.add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.type}));
+                        $model.user.get('contacts').add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.type}));
                     } else {
                         contact.set('status', presence.status);
                         contact.set('state', presence.type);
                     }
                 }
+                loadContactList($view.contactList);
             },
             onDisconnect: function () {
                 logContainer.html("Disconnected");
@@ -154,7 +192,7 @@ $(document).ready(function () {
                 conversation.find(".conversation").append("<div>" + jid[0] + ": " + message.body + "</div>");
             }, onIq: function (data) {
                 if (isRoster(data)) {
-                    refreshRoster(data, contactList, contacts);
+                    refreshRoster(data, $view.contactList, $model.user.contacts);
                 }
             }, onError: function (error) {
                 alert(error.error);
@@ -205,37 +243,21 @@ $(document).ready(function () {
     // --------------------------- functions -------------------
     function loadContactList(contactList) {
         $.xmpp.getRoster(function (roster) {
-            for (var i = 0; i < roster.length; i++) {
-                user = roster[i];
-                if (user.subscription == "both") {
-                    var contact = $("<li>");
-                    contact.append("<a jid='" + user.jid + "'  href='javascript:void(0)'>" + user.jid + "</a>");
-                    contact.find("a").on('click', function () {
-                        var jid = $(this).attr('jid');
-                        var id = MD5.hexdigest(jid);
-                        var conversation = $("#" + id);
-                        if (conversation.length == 0)
-                            openChat({to: jid});
-                    });
-                    contactList.append(contact);
-                }
-            }
-        })
+        });
     }
 
-    function subscriptionAutoResponse(jid) {
-        sendRequest(jid, "subscribed");
-        subscribedToList.pop(jid);
-        refreshRoster(data, contactList, contacts);
+    function subscriptionAutoResponse(jid, type) {
+        sendRequest(jid, type);
+        refreshRoster(data, $view.contactList, $model.user.contacts);
     }
 
     $('body').on('acceptSubscription', function(event, jid) {
         sendRequest(jid, "subscribed");
         sendRequest(jid, "subscribe");
+        $('#notification').hide("slow");
     });
 
     $('body').on('sendSubscribe', function(event, jid) {
-        subscribedToList.push(jid);
         sendRequest(jid, "subscribe");
     });
 
@@ -262,13 +284,13 @@ $(document).ready(function () {
             var jItem = $(item);
             roster.push({name: jItem.attr("name"), subscription: jItem.attr("subscription"), jid: jItem.attr("jid")});
         });
-        contactList.html("");
+        $view.contactList.html("");
         for (var i = 0; i < roster.length; i++) {
             user = roster[i];
             if (user.subscription == "both") {
-                var contactModel = contacts.findWhere({jid: user.jid});
+                var contactModel = $model.user.get('contacts').findWhere({jid: user.jid});
                 if (!contactModel) {
-                    contacts.add(new Contact({jid: user.jid, username: user.jid, status: "none", state: "unavailable"}));
+                    $model.user.get('contacts').add(new Contact({jid: user.jid, username: user.jid, status: "none", state: "unavailable"}));
                 }
                 var contact = $("<li>");
                 contact.append("<a jid='" + user.jid + "'  href='javascript:void(0)'>" + user.jid + "</a><div class='state'>none</div>");
@@ -279,7 +301,13 @@ $(document).ready(function () {
                     if (conversation.length == 0)
                         openChat({to: jid});
                 });
-                contactList.append(contact);
+                $view.contactList.append(contact);
+            }
+            if(user.subscription == "to") {
+                $model.user.get('outgoingContactRequests').push(user.jid);
+            }
+            if(user.subscription == "from") {
+                $model.user.get('incomingContactRequests').push(user.jid);
             }
         }
     }
