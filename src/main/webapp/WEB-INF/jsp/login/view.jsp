@@ -26,11 +26,17 @@
     <button id="connectBut">Connect</button>
     <button id="disconnectBut">Disconnect</button>
     <br>
-    <button id="send-request">Send Request to Test2</button>
-    <br>
     <button type="button" data-toggle="modal" data-target="#search-modal">Add contact</button>
     <br>
-    <button id="dnd">Set DND</button>
+    <div class="dropdown user-state">
+        <a data-toggle="dropdown" href="#"><div class='state online'></div>Online<span class="caret"></span></a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            <li><div class='state online'></div>Online</li>
+            <li><div class='state away'></div>Away</li>
+            <li><div class='state dnd'></div>Do Not Disturb</li>
+            <li><div class='state offline'></div>Offline</li>
+        </ul>
+    </div>
     <div id="log">
     </div>
     <ul id="contacts">
@@ -85,7 +91,8 @@ $(document).ready(function () {
         initialize: function () {
             this.on("change:state", function (model) {
                 var jid = model.get("jid");
-                $view.contactList.find("li a[jid='" + jid + "']").next().html(model.get("state"));
+                var state = model.get("state");
+                $view.contactList.find("li a[jid='" + jid + "']").next().attr('class', 'state ' + state);
             });
         }
     });
@@ -121,12 +128,7 @@ $(document).ready(function () {
             });
         }
     });
-
-
-
     $model.user = new User();
-   // $model.user.contacts = new ContactList();
-    var subscribedToList = [];
 
     $("#connectBut").click(function () {
         var jid = $("#jid").val();
@@ -137,14 +139,14 @@ $(document).ready(function () {
         $.xmpp.connect({url: url, jid: jid, password: password,
             onConnect: function () {
                 logContainer.html("Connected");
-                $.xmpp.setPresence(null);
+                $.xmpp.setPresence("available", null);
 
                 loadContactList($view.contactList);
             },
             onPresence: function (presence) {
                 var jid = jidTrim(presence.from);
-                outRequests = $model.user.get('outgoingContactRequests');
-                inRequests = $model.user.get('incomingContactRequests');
+                var outRequests = $model.user.get('outgoingContactRequests');
+                var inRequests = $model.user.get('incomingContactRequests');
                 if (presence.type == 'subscribe') {
                     if ($.inArray(jid, outRequests) != -1) {
                         subscriptionAutoResponse(jid, 'subscribed');
@@ -170,10 +172,10 @@ $(document).ready(function () {
                 } else {
                     var contact =  $model.user.get('contacts').findWhere({jid: jid});
                     if (!contact) {
-                        $model.user.get('contacts').add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.type}));
+                        $model.user.get('contacts').add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.show}));
                     } else {
                         contact.set('status', presence.status);
-                        contact.set('state', presence.type);
+                        contact.set('state', presence.show);
                     }
                 }
                 loadContactList($view.contactList);
@@ -205,12 +207,6 @@ $(document).ready(function () {
         $.xmpp.disconnect();
     });
 
-    $("#send-request").on('click', function () {
-        $.xmpp.sendCommand("<presence to='test2@wsua-01832' type='subscribe'/>",
-                function (e) {
-                    e;
-                });
-    });
 
     $("#dnd").click(function () {
         $.xmpp.setPresence("dnd");
@@ -289,12 +285,13 @@ $(document).ready(function () {
         for (var i = 0; i < roster.length; i++) {
             user = roster[i];
             if (user.subscription == "both") {
-                var contactModel = $model.user.get('contacts').findWhere({jid: user.jid});
-                if (!contactModel) {
+                $model.contact = $model.user.get('contacts').findWhere({jid: user.jid});
+                if (!$model.contact) {
                     $model.user.get('contacts').add(new Contact({jid: user.jid, username: user.jid, status: "none", state: "unavailable"}));
+                    $model.contact = $model.user.get('contacts').findWhere({jid: user.jid});
                 }
                 var contact = $("<li>");
-                contact.append("<a jid='" + user.jid + "'  href='javascript:void(0)'>" + user.jid + "</a><div class='state'>none</div>");
+                contact.append("<a jid='" + $model.contact.get('jid') + "'  href='javascript:void(0)'>" +$model.contact.get('jid') + "</a><div class='state "+$model.contact.get('state')+"'></div>");
                 contact.find("a").on('click', function () {
                     var jid = $(this).attr('jid');
                     var id = MD5.hexdigest(jid);

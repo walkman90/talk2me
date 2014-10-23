@@ -567,12 +567,16 @@
         * @params String The common presences are: null, away, dnd
         * @params callback: function(){}
         */
-        setPresence: function(type, callback){
+        setPresence: function(show, status, callback){
             var msg;
-            if(type == null)
-                msg = "<presence xmlns='jabber:client'></presence>";
+            if(status != null && show != null)
+                msg = "<presence xmlns='jabber:client'><show>"+show+"</show><status>"+status+"</status></presence>";
+            else if(show != null)
+                msg = "<presence xmlns='jabber:client'><show>"+show+"</show></presence>";
+            else if(status != null)
+                msg = "<presence xmlns='jabber:client'><status>"+status+"</status></presence>";
             else
-                msg = "<presence xmlns='jabber:client'><show>"+type+"</show></presence>";
+                msg = "<presence xmlns='jabber:client'></presence>";
             this.sendCommand(msg,callback);
         },
 
@@ -639,15 +643,10 @@
             $.each(response.find("presence"),function(i,element){
                 try{
                     var e = $(element);
-                    var status;
-                    var type;
-                    if(e.attr("type") != null){
-						type = e.attr("type")
-					}else{
-						type = 'available'
-					}
-                    status = e.find("show").html()
-                    xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), status: status, type:type});
+                    var show = e.find("show").html()
+                    var status = e.find("status").html()
+                    var type = e.attr("type")
+                    xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), status: status, type:type, show:show});
                 }catch(e){}
             });
         },

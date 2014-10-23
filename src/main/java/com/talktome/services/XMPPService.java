@@ -75,7 +75,6 @@ public class XMPPService {
     public void createAccount(String username, String password) throws XMPPException {
         AccountManager accountManager = getConnection().getAccountManager();
         accountManager.supportsAccountCreation();
-        Collection c = accountManager.getAccountAttributes();
         Map<String, String> attr = new HashMap<String, String>();
         attr.put("name", username);
         attr.put("email", username+"@openfire.com");

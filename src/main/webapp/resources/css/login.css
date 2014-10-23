@@ -18,3 +18,60 @@
 #container #notification .msg {
     margin-right: 5px;
 }
+
+#container #contacts li {
+    display: table-row;
+}
+
+#container #contacts li div.state {
+    width: 8px;
+    float: left;
+    height: 8px;
+    border-radius: 8px;
+}
+
+#container #contacts li a {
+    float: left;
+}
+
+#container .user-state {
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+#container .user-state ul  {
+    /*opacity: 0.5;*/
+}
+
+#container .user-state ul li {
+    padding: 2px 5px 3px 9px;
+    cursor: pointer;
+}
+
+#container .user-state ul li:hover {
+    background-color: rgb(234, 245, 255);
+}
+
+#container #contacts li div.state.unavailable, #container .user-state .state.offline {
+    background-color: #ccc;
+}
+
+#container #contacts li div.state.available, #container .user-state .state.online {
+    background-color: #1DA934;
+}
+
+#container #contacts li div.state.away, #container .user-state .state.away {
+    background-color: #FFC121;
+}
+
+#container #contacts li div.state.dnd, #container .user-state .state.dnd  {
+    background-color: #EF1414;
+}
+
+#container .user-state .state {
+    width: 8px;
+    float: left;
+    height: 8px;
+    border-radius: 8px;
+    margin-right: 5px;
+}
