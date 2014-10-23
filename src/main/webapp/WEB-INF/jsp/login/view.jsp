@@ -6,21 +6,22 @@
     <script type="text/javascript" src="<c:url value="/resources/js/jquery.xmpp.js" />"></script>
     <script type="text/javascript" src="<c:url value="/resources/js/underscore-min.js" />"></script>
     <script type="text/javascript" src="<c:url value="/resources/js/backbone-min.js" />"></script>
-    <script src="<c:url value="/resources/bootstrap/js/bootstrap.min.js" />"></script>
+    <script src="<c:url value="/resources/vendor/bootstrap/js/bootstrap.min.js" />"></script>
     <link rel="stylesheet" href="<c:url value="/resources/css/login.css" />">
-    <link rel="stylesheet" href="<c:url value="/resources/bootstrap/css/bootstrap.min.css" />">
-    <link rel="stylesheet" href="<c:url value="/resources/bootstrap/css/bootstrap-theme.min.css" />">
+    <link rel="stylesheet" href="<c:url value="/resources/vendor/font-awesome-4.2.0/css/font-awesome.min.css" />">
+    <link rel="stylesheet" href="<c:url value="/resources/vendor/bootstrap/css/bootstrap.min.css" />">
+    <link rel="stylesheet" href="<c:url value="/resources/vendor/bootstrap/css/bootstrap-theme.min.css" />">
     <title>Basic connection</title>
 </head>
 
 </head>
 <body>
 <div id="container">
-    This example just connect notify when connected and show the connected contacts.
+    Sign In
     <br>
-    Jid <input type="text" id="jid"> (ej: maxpowel@gmail.com, alvaro.maxpowel@chat.facebook.com)
+    <i class="fa fa-user fa-fw"></i> Jid <input type="text" id="jid">
     <br>
-    Password <input type="password" id="pass">
+    <i class="fa fa-key fa-fw"></i> Password <input type="password" id="pass">
     <br>
     <button id="connectBut">Connect</button>
     <button id="disconnectBut">Disconnect</button>
