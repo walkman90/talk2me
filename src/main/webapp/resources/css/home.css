@@ -143,3 +143,43 @@
     width: 550px;
     height: 100%;
 }
+
+#left-block .user-info {
+    width: 100%;
+    float: left;
+}
+
+#left-block .actions {
+    padding: 5px;
+    float: left;
+    width: 100%;
+}
+
+#left-block .actions .action {
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    float: left;
+    vertical-align: middle;
+    display: table;
+    padding: 3px;
+    background-color: rgba(222, 224, 143, 1);
+}
+
+#left-block .actions .action.add-contact .fa-user {
+    font-size: 25px;
+    margin-top: 5px;
+    margin-left: 4px;
+}
+
+#left-block .actions .action.add-contact .fa-plus {
+    margin-left: -6px;
+    color: white;
+    padding-top: 7px;
+    font-size: 16px;
+}
+
+#left-block .actions .action:hover {
+    cursor: pointer;
+    background-color: rgba(255, 249, 170, 0.66);
+}

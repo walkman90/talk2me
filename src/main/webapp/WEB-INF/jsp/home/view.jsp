@@ -18,15 +18,30 @@
 <body>
 <div id="container">
     <div id="left-block">
-        <button type="button" data-toggle="modal" data-target="#search-modal">Add contact</button>
-        <br>
-        <div class="avatar"></div>
+        <div class="user-info">
+            <div class="avatar"></div>
+            ${user.name}
+        </div>
+        <div class="actions">
+            <div data-toggle="modal" data-target="#search-modal" class="action add-contact"><i class="fa fa-user"></i><i class="fa fa-plus"></i></div>
+        </div>
         <div class="dropdown user-state">
-            <a data-toggle="dropdown" href="#"><div class='state online'></div>Online<span class="caret"></span></a>
+            <a data-toggle="dropdown" href="#">
+                <div class='state online'></div>
+                Online<span class="caret"></span></a>
             <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                <li state="chat"><div class='state online'></div>Online</li>
-                <li state="away"><div class='state away'></div>Away</li>
-                <li state="dnd"><div class='state dnd'></div>Do Not Disturb</li>
+                <li state="chat">
+                    <div class='state online'></div>
+                    Online
+                </li>
+                <li state="away">
+                    <div class='state away'></div>
+                    Away
+                </li>
+                <li state="dnd">
+                    <div class='state dnd'></div>
+                    Do Not Disturb
+                </li>
             </ul>
         </div>
         <div id="log">
@@ -128,8 +143,8 @@ $(document).ready(function () {
     $model.user = new User();
     $view.userState = $('.dropdown.user-state');
 
-    $view.userState.find('li').click(function() {
-        if($.xmpp.isConnected()) {
+    $view.userState.find('li').click(function () {
+        if ($.xmpp.isConnected()) {
             $.xmpp.setPresence($(this).attr('state'), null);
             var select = $view.userState.find('a');
             select.html($(this).html());
@@ -139,77 +154,77 @@ $(document).ready(function () {
     });
 
 
-   // $("#connectBut").click(function () {
-        var jid = '${user.jid}';
-        var password = '${user.password}';
+    // $("#connectBut").click(function () {
+    var jid = '${user.jid}';
+    var password = '${user.password}';
 
 
-        var url = "http://127.0.0.1:7070/http-bind/";
-        $.xmpp.connect({url: url, jid: jid, password: password,
-            onConnect: function () {
-                logContainer.html("Connected");
-                $.xmpp.setPresence("chat", null);
+    var url = "http://127.0.0.1:7070/http-bind/";
+    $.xmpp.connect({url: url, jid: jid, password: password,
+        onConnect: function () {
+            logContainer.html("Connected");
+            $.xmpp.setPresence("chat", null);
 
-                loadContactList($view.contactList);
-            },
-            onPresence: function (presence) {
-                var jid = jidTrim(presence.from);
-                var outRequests = $model.user.get('outgoingContactRequests');
-                var inRequests = $model.user.get('incomingContactRequests');
-                if (presence.type == 'subscribe') {
-                    if ($.inArray(jid, outRequests) != -1) {
-                        subscriptionAutoResponse(jid, 'subscribed');
-                        $model.user.get('outgoingContactRequests').pop(jid);
-                    } else if ($.inArray(jid, inRequests) != -1) {
-                        subscriptionAutoResponse(jid, 'subscribed');
-                        $model.user.get('incomingContactRequests').pop(jid);
-                    } else {
-                        var notification = $('body').find('#notification');
-                        notification.html("<div class='msg'> Subscription from: " + presence.from + "</div><button class='btn btn-primary btn-xs' id='accept-btn' onclick='$(\"body\").trigger(\"acceptSubscription\", [\""+jid+"\"])'>Accept</button><button class='btn btn-default btn-xs'>Refuse</button>");
-                        notification.find('#accept-btn').attr('jid', presence.from);
-                        notification.show("slow");
-                    }
-                } else if (presence.type == 'subscribed') {
-
-                    if ($.inArray(jid, outRequests) != -1) {
-                        subscriptionAutoResponse(jid, 'subscribe');
-                        $model.user.get('outgoingContactRequests').pop(jid);
-                    } else if ($.inArray(jid, inRequests) != -1) {
-                        subscriptionAutoResponse(jid, 'subscribe');
-                        $model.user.get('incomingContactRequests').pop(jid);
-                    }
+            loadContactList($view.contactList);
+        },
+        onPresence: function (presence) {
+            var jid = jidTrim(presence.from);
+            var outRequests = $model.user.get('outgoingContactRequests');
+            var inRequests = $model.user.get('incomingContactRequests');
+            if (presence.type == 'subscribe') {
+                if ($.inArray(jid, outRequests) != -1) {
+                    subscriptionAutoResponse(jid, 'subscribed');
+                    $model.user.get('outgoingContactRequests').pop(jid);
+                } else if ($.inArray(jid, inRequests) != -1) {
+                    subscriptionAutoResponse(jid, 'subscribed');
+                    $model.user.get('incomingContactRequests').pop(jid);
                 } else {
-                    var contact =  $model.user.get('contacts').findWhere({jid: jid});
-                    if (!contact) {
-                        $model.user.get('contacts').add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.show}));
-                    } else {
-                        contact.set('status', presence.status);
-                        contact.set('state', presence.show);
-                    }
+                    var notification = $('body').find('#notification');
+                    notification.html("<div class='msg'> Subscription from: " + presence.from + "</div><button class='btn btn-primary btn-xs' id='accept-btn' onclick='$(\"body\").trigger(\"acceptSubscription\", [\"" + jid + "\"])'>Accept</button><button class='btn btn-default btn-xs'>Refuse</button>");
+                    notification.find('#accept-btn').attr('jid', presence.from);
+                    notification.show("slow");
                 }
-                loadContactList($view.contactList);
-            },
-            onDisconnect: function () {
-                logContainer.html("Disconnected");
-            },
-            onMessage: function (message) {
+            } else if (presence.type == 'subscribed') {
 
-                var jid = message.from.split("/");
-                var id = MD5.hexdigest(jid[0]);
-                var conversation = $("#" + id);
-                if (conversation.length == 0) {
-                    openChat({to: jid[0]});
+                if ($.inArray(jid, outRequests) != -1) {
+                    subscriptionAutoResponse(jid, 'subscribe');
+                    $model.user.get('outgoingContactRequests').pop(jid);
+                } else if ($.inArray(jid, inRequests) != -1) {
+                    subscriptionAutoResponse(jid, 'subscribe');
+                    $model.user.get('incomingContactRequests').pop(jid);
                 }
-                conversation = $("#" + id);
-                conversation.find(".conversation").append("<div>" + jid[0] + ": " + message.body + "</div>");
-            }, onIq: function (data) {
-                if (isRoster(data)) {
-                    refreshRoster(data, $view.contactList, $model.user.contacts);
+            } else {
+                var contact = $model.user.get('contacts').findWhere({jid: jid});
+                if (!contact) {
+                    $model.user.get('contacts').add(new Contact({jid: jid, username: presence.from, status: presence.status, state: presence.show}));
+                } else {
+                    contact.set('status', presence.status);
+                    contact.set('state', presence.show);
                 }
-            }, onError: function (error) {
-                alert(error.error);
             }
-        });
+            loadContactList($view.contactList);
+        },
+        onDisconnect: function () {
+            logContainer.html("Disconnected");
+        },
+        onMessage: function (message) {
+
+            var jid = message.from.split("/");
+            var id = MD5.hexdigest(jid[0]);
+            var conversation = $("#" + id);
+            if (conversation.length == 0) {
+                openChat({to: jid[0]});
+            }
+            conversation = $("#" + id);
+            conversation.find(".conversation").append("<div>" + jid[0] + ": " + message.body + "</div>");
+        }, onIq: function (data) {
+            if (isRoster(data)) {
+                refreshRoster(data, $view.contactList, $model.user.contacts);
+            }
+        }, onError: function (error) {
+            alert(error.error);
+        }
+    });
     //});
 
     $("#disconnectBut").click(function () {
@@ -257,13 +272,13 @@ $(document).ready(function () {
         refreshRoster(data, $view.contactList, $model.user.contacts);
     }
 
-    $('body').on('acceptSubscription', function(event, jid) {
+    $('body').on('acceptSubscription', function (event, jid) {
         sendRequest(jid, "subscribed");
         sendRequest(jid, "subscribe");
         $('#notification').hide("slow");
     });
 
-    $('body').on('sendSubscribe', function(event, jid) {
+    $('body').on('sendSubscribe', function (event, jid) {
         sendRequest(jid, "subscribe");
     });
 
@@ -300,7 +315,7 @@ $(document).ready(function () {
                     $model.contact = $model.user.get('contacts').findWhere({jid: user.jid});
                 }
                 var contact = $("<li>");
-                contact.append("<a jid='" + $model.contact.get('jid') + "'  href='javascript:void(0)'>" +$model.contact.get('jid') + "</a><div class='state "+$model.contact.get('state')+"'></div>");
+                contact.append("<a jid='" + $model.contact.get('jid') + "'  href='javascript:void(0)'>" + $model.contact.get('jid') + "</a><div class='state " + $model.contact.get('state') + "'></div>");
                 contact.find("a").on('click', function () {
                     var jid = $(this).attr('jid');
                     var id = MD5.hexdigest(jid);
@@ -310,10 +325,10 @@ $(document).ready(function () {
                 });
                 $view.contactList.append(contact);
             }
-            if(user.subscription == "to") {
+            if (user.subscription == "to") {
                 $model.user.get('outgoingContactRequests').push(user.jid);
             }
-            if(user.subscription == "from") {
+            if (user.subscription == "from") {
                 $model.user.get('incomingContactRequests').push(user.jid);
             }
         }
@@ -335,7 +350,7 @@ $(document).ready(function () {
     }
 
     function jidTrim(jid) {
-        if(jid.indexOf('/') == -1) {
+        if (jid.indexOf('/') == -1) {
             return jid;
         } else {
             return jid.substr(0, jid.indexOf('/'));
