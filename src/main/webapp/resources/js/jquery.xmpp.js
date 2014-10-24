@@ -646,6 +646,12 @@
                     var show = e.find("show").html()
                     var status = e.find("status").html()
                     var type = e.attr("type")
+                    if(type == "unavailable") {
+                        show = "offline"
+                    }
+                    if (show == 'chat') {
+                        show = 'online'
+                    }
                     xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), status: status, type:type, show:show});
                 }catch(e){}
             });

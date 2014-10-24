@@ -1,1 +1,1 @@
-<script>document.location = '/chat'</script>
+<script>location.href="/home"</script>

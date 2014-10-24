@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.io.IOException;
+
 /**
  * Created by vokl0313 on 9/25/14.
  */
@@ -37,7 +39,7 @@ public class RegistrationController {
 
     @RequestMapping(value="/account/create", method=RequestMethod.POST)
     public String signIn(Model model, @Validated @ModelAttribute("registrationVO") RegistrationVO registrationVO,
-                         BindingResult bindingResult) throws XMPPException {
+                         BindingResult bindingResult) throws XMPPException, IOException {
         if(bindingResult.hasErrors()) {
             model.addAttribute("registrationVO", registrationVO);
             return "registration/form";

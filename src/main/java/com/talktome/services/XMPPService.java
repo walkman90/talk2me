@@ -8,10 +8,17 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.ReportedData;
+import org.jivesoftware.smackx.packet.VCard;
 import org.jivesoftware.smackx.search.UserSearchManager;
 import org.springframework.stereotype.Service;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -47,7 +54,7 @@ public class XMPPService {
 //                config.setCompressionEnabled(false);
 //                config.setCustomSSLContext(SSLContext.getDefault());
 //                config.setSecurityMode(org.jivesoftware.smack.ConnectionConfiguration.SecurityMode.disabled);
-                SmackConfiguration.setPacketReplyTimeout(10000);
+                SmackConfiguration.setPacketReplyTimeout(30000);
                 connection = new XMPPConnection("localhost");
                 connection.connect();
                // if(!connection.isAuthenticated()) {
@@ -72,13 +79,26 @@ public class XMPPService {
         return connection;
     }
 
-    public void createAccount(String username, String password) throws XMPPException {
+    public void createAccount(String username, String password) throws XMPPException, IOException {
         AccountManager accountManager = getConnection().getAccountManager();
         accountManager.supportsAccountCreation();
         Map<String, String> attr = new HashMap<String, String>();
         attr.put("name", username);
         attr.put("email", username+"@openfire.com");
         accountManager.createAccount(username, password, attr);
+
+        XMPPConnection xmppConnection = new XMPPConnection("localhost");
+        xmppConnection.connect();
+        xmppConnection.login(username, password);
+        VCard vCard = new VCard();
+        URL imageURL = new URL("http://localhost:8080/resources/images/default_avatar.jpg");
+        BufferedImage originalImage= ImageIO.read(imageURL);
+        ByteArrayOutputStream baos=new ByteArrayOutputStream();
+        ImageIO.write(originalImage, "jpg", baos );
+
+        vCard.setAvatar(baos.toByteArray());
+        vCard.save(xmppConnection);
+        xmppConnection.disconnect();
     }
 
     public ArrayList<UserVO> findUserBy(String value, UserColumn column) throws XMPPException {

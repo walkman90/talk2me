@@ -7,6 +7,7 @@ public class UserVO {
     private String jid;
     private String name;
     private String username;
+    private String password;
     private String email;
 
     public String getJid() {
@@ -39,5 +40,13 @@ public class UserVO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
