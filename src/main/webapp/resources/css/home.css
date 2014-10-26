@@ -112,18 +112,24 @@
     width: 50px;
     height: 50px;
     background-size: 50px;
+    float: left;
+    margin-right: 5px;
 }
 
 #contacts {
     line-height: 40px;
-    border: 1px solid #ccc;
     float: left;
+    border-top: 1px solid #ccc;
     padding: 0;
+    width: 100%;
 }
 
 #container #contacts li {
     border-bottom: 1px solid #ccc;
     padding: 9px;
+    float: left;
+    list-style-type: none;
+    width: 100%;
 }
 
 #container #contacts li:last-child {
@@ -147,6 +153,8 @@
 #left-block .user-info {
     width: 100%;
     float: left;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
 }
 
 #left-block .actions {
@@ -163,7 +171,7 @@
     vertical-align: middle;
     display: table;
     padding: 3px;
-    background-color: rgba(222, 224, 143, 1);
+    margin-right: 7px;
 }
 
 #left-block .actions .action.add-contact .fa-user {
@@ -172,14 +180,43 @@
     margin-left: 4px;
 }
 
+#left-block .actions .action.sign-out i {
+    font-size: 25px;
+    margin-top: 5px;
+    margin-left: 6px;
+}
+
 #left-block .actions .action.add-contact .fa-plus {
-    margin-left: -6px;
-    color: white;
-    padding-top: 7px;
-    font-size: 16px;
+    font-size: 10px;
+    margin-top: -10px;
 }
 
 #left-block .actions .action:hover {
     cursor: pointer;
-    background-color: rgba(255, 249, 170, 0.66);
+    background-color: rgb(212, 228, 236);
+}
+
+#container .user-info-right-block {
+    float: left;
+}
+#container .user-info .user-name {
+    margin-left: 10px;
+}
+
+#container .chat-window {
+    border: 1px solid #000000;
+    float:left;
+    position: absolute;
+    width: calc(100% - 250px);
+    height: 100%;
+}
+
+#container .conversation {
+    overflow: auto;
+    height: calc(100% - 125px);
+}
+
+.chat-window .header {
+    border: 1px solid #000000;
+    height: 70px;
 }

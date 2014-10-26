@@ -4,3 +4,21 @@
     top: calc(50% - 70px);
     left: calc(50% - 150px);
 }
+
+#container{
+    height: 100%;
+    background: url(../images/background_tree.jpg) no-repeat bottom center fixed;
+    background-position-y: -375px;
+    background-size: 1920px;
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.5);
+    /* -webkit-filter: blur(5px); */
+    width: 100%;
+    position: absolute;
+    height: 200px;
+    top: calc(50% - 100px);
+    float: left;
+    left: 0;
+}

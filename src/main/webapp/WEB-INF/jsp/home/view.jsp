@@ -20,38 +20,42 @@
     <div id="left-block">
         <div class="user-info">
             <div class="avatar"></div>
-            ${user.name}
+            <div class="user-info-right-block">
+                <div class="user-name">${user.name}</div>
+                <div class="dropdown user-state">
+                    <a data-toggle="dropdown" href="#">
+                        <div class='state online'></div>
+                        Online<span class="caret"></span></a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+                        <li state="chat">
+                            <div class='state online'></div>
+                            Online
+                        </li>
+                        <li state="away">
+                            <div class='state away'></div>
+                            Away
+                        </li>
+                        <li state="dnd">
+                            <div class='state dnd'></div>
+                            Do Not Disturb
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
         <div class="actions">
-            <div data-toggle="modal" data-target="#search-modal" class="action add-contact"><i class="fa fa-user"></i><i class="fa fa-plus"></i></div>
+            <div data-toggle="modal" data-target="#search-modal" class="action add-contact"><i class="fa fa-user"></i><i
+                    class="fa fa-plus"></i>
+            </div>
+            <div id="disconnectBut" class="action sign-out"><i class="fa fa-sign-out"></i></div>
         </div>
-        <div class="dropdown user-state">
-            <a data-toggle="dropdown" href="#">
-                <div class='state online'></div>
-                Online<span class="caret"></span></a>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-                <li state="chat">
-                    <div class='state online'></div>
-                    Online
-                </li>
-                <li state="away">
-                    <div class='state away'></div>
-                    Away
-                </li>
-                <li state="dnd">
-                    <div class='state dnd'></div>
-                    Do Not Disturb
-                </li>
-            </ul>
-        </div>
-        <div id="log">
-        </div>
+
         <ul id="contacts">
         </ul>
     </div>
 
     <div id="right-block">
-        <button id="disconnectBut">Disconnect</button>
+
     </div>
 
     <div id='notification'></div>
@@ -90,7 +94,7 @@
 $(document).ready(function () {
     var $model = $model || {};
     var $view = $view || {};
-    var logContainer = $("#log");
+    $view.container = $("#container");
     $view.contactList = $("#contacts");
 
     var Contact = Backbone.Model.extend({
@@ -162,7 +166,6 @@ $(document).ready(function () {
     var url = "http://127.0.0.1:7070/http-bind/";
     $.xmpp.connect({url: url, jid: jid, password: password,
         onConnect: function () {
-            logContainer.html("Connected");
             $.xmpp.setPresence("chat", null);
 
             loadContactList($view.contactList);
@@ -205,7 +208,7 @@ $(document).ready(function () {
             loadContactList($view.contactList);
         },
         onDisconnect: function () {
-            logContainer.html("Disconnected");
+
         },
         onMessage: function (message) {
 
@@ -320,8 +323,12 @@ $(document).ready(function () {
                     var jid = $(this).attr('jid');
                     var id = MD5.hexdigest(jid);
                     var conversation = $("#" + id);
-                    if (conversation.length == 0)
+                    $view.container.find('.chat-window').css('display', 'none');
+                    if (conversation.length == 0) {
                         openChat({to: jid});
+                    } else {
+                        conversation.closest('.chat-window').css('display', '');
+                    }
                 });
                 $view.contactList.append(contact);
             }
@@ -337,7 +344,7 @@ $(document).ready(function () {
     function openChat(options) {
         var id = MD5.hexdigest(options.to);
 
-        var chat = $("<div style='border: 1px solid #000000; float:left' id='" + id + "'><div style='border: 1px solid #000000;'>Chat with " + options.to + "</div><div style='height:150px;overflow: auto;' class='conversation'></div><div><input type='text' /><button>Send</button></div></div>");
+        var chat = $("<div class='chat-window' id='" + id + "'><div class='header' >Chat with " + options.to + "</div><div class='conversation'></div><div><input type='text' /><button>Send</button></div></div>");
         var input = chat.find("input");
         var sendBut = chat.find("button");
         var conversation = chat.find(".conversation");
@@ -346,7 +353,7 @@ $(document).ready(function () {
             conversation.append("<div>" + $.xmpp.jid + ": " + input.val() + "</div>");
             input.val("");
         });
-        $("body").append(chat);
+        $("#container #right-block").append(chat);
     }
 
     function jidTrim(jid) {

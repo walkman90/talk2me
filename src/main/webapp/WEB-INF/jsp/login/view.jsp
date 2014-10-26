@@ -17,8 +17,10 @@
 </head>
 <body>
 <div id="container">
-    <div class="login-container">
-           <%@include file="form.jsp"%>
+    <div class="login-box">
+        <div class="login-container">
+            <%@include file="form.jsp" %>
+        </div>
     </div>
 </div>
 </body>
@@ -27,20 +29,20 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-         var container = $('#container .login-container');
-         container.find('form').submit(function() {
-             var form = $(this);
-             $.ajax({
-                 url     : form.attr('action'),
-                 type    : 'POST',
-                 data    : form.serialize(),
-                 success : function(data) {
-                     container.html(data);
-                 }
-             });
+        var container = $('#container .login-container');
+        container.find('form').submit(function () {
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (data) {
+                    container.html(data);
+                }
+            });
 
-             return false;
-         });
+            return false;
+        });
     });
 
 

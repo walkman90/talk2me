@@ -20,12 +20,11 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 
 @Controller
-@RequestMapping("/home")
 public class HomeController {
     @Autowired
     XMPPService xmppService;
 
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value="/home", method = RequestMethod.GET)
 	public String render(ModelMap model, HttpSession session) throws XMPPException {
         UserVO user = (UserVO)session.getAttribute(Utils.SESSION_KEYS.USER.name());
 		model.addAttribute("user", user);
@@ -34,7 +33,7 @@ public class HomeController {
 		return "home/view";
 	}
 
-    @RequestMapping(value="search", method=RequestMethod.POST)
+    @RequestMapping(value="/search", method=RequestMethod.POST)
     public String search(Model model, @RequestParam("value") String value) throws XMPPException {
         ArrayList<UserVO> users = xmppService.findUserBy(value, XMPPService.UserColumn.USER_NAME);
         model.addAttribute("users", users);
