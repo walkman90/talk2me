@@ -54,9 +54,9 @@ public class LoginController {
         }
 
         try {
-            XMPPConnection xmppConnection = new XMPPConnection("localhost");
+            XMPPConnection xmppConnection = new XMPPConnection("wsua-01832");
             xmppConnection.connect();
-            xmppConnection.login(loginVO.getLogin()+"@localhost", loginVO.getPassword());
+            xmppConnection.login(loginVO.getLogin()+"@wsua-01832", loginVO.getPassword());
         } catch (XMPPException e) {
             ObjectError err = new ObjectError("loginVO", "Xmpp connection failed");
             bindingResult.addError(err);

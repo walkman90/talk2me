@@ -649,7 +649,7 @@
                     if(type == "unavailable") {
                         show = "offline"
                     }
-                    if (show == 'chat') {
+                    if (show == 'chat' || show == undefined) {
                         show = 'online'
                     }
                     xmpp.onPresence({from: e.attr("from"), to: e.attr("to"), status: status, type:type, show:show});

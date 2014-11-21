@@ -7,8 +7,8 @@
 
 #container{
     height: 100%;
-    background: url(../images/background_tree.jpg) no-repeat bottom center fixed;
-    background-position-y: -375px;
+    background: url(../images/background_tree.jpg) no-repeat center fixed;
+    /*background-position-y: -375px;*/
     background-size: 1920px;
 }
 

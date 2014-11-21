@@ -55,7 +55,7 @@ public class XMPPService {
 //                config.setCustomSSLContext(SSLContext.getDefault());
 //                config.setSecurityMode(org.jivesoftware.smack.ConnectionConfiguration.SecurityMode.disabled);
                 SmackConfiguration.setPacketReplyTimeout(30000);
-                connection = new XMPPConnection("localhost");
+                connection = new XMPPConnection("wsua-01832");
                 connection.connect();
                // if(!connection.isAuthenticated()) {
                     connection.login("admin", "admin");
@@ -87,7 +87,7 @@ public class XMPPService {
         attr.put("email", username+"@openfire.com");
         accountManager.createAccount(username, password, attr);
 
-        XMPPConnection xmppConnection = new XMPPConnection("localhost");
+        XMPPConnection xmppConnection = new XMPPConnection("wsua-01832");
         xmppConnection.connect();
         xmppConnection.login(username, password);
         VCard vCard = new VCard();

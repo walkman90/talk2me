@@ -102,13 +102,20 @@ $(document).ready(function () {
             jid: "test",
             username: "test",
             state: "offline",
-            status: ""
+            status: "",
+            avatarBinVal: "",
+            avatarImgType: ""
         },
         initialize: function () {
             this.on("change:state", function (model) {
                 var jid = model.get("jid");
                 var state = model.get("state");
                 $view.contactList.find("li a[jid='" + jid + "']").next().attr('class', 'state ' + state);
+            });
+            this.on("change:avatarBinVal", function (model) {
+                var jid = model.get("jid");
+                var avatarBin = model.get("avatarBinVal");
+                $view.contactList.find("li a[jid='" + jid + "']").prev().attr('src', 'data:image/png;base64, ' + avatarBin);
             });
         }
     });
@@ -163,7 +170,7 @@ $(document).ready(function () {
     var password = '${user.password}';
 
 
-    var url = "http://127.0.0.1:7070/http-bind/";
+    var url = "http://wsua-01832:7070/http-bind/";
     $.xmpp.connect({url: url, jid: jid, password: password,
         onConnect: function () {
             $.xmpp.setPresence("chat", null);
@@ -219,7 +226,10 @@ $(document).ready(function () {
                 openChat({to: jid[0]});
             }
             conversation = $("#" + id);
-            conversation.find(".conversation").append("<div>" + jid[0] + ": " + message.body + "</div>");
+            conversation.find(".conversation").append("<div class='phrase-block'>" +
+                    "<div class='name'>" + jid[0] + "</div>" +
+                    "<div class='text'>" + message.body + "</div>" +
+                    "<div class='timestamp'>" + getCurrentTime() + "</div></div>");
         }, onIq: function (data) {
             if (isRoster(data)) {
                 refreshRoster(data, $view.contactList, $model.user.contacts);
@@ -265,6 +275,14 @@ $(document).ready(function () {
 
 
     // --------------------------- functions -------------------
+    function getCurrentTime() {
+        var dt = new Date();
+        return dt.getHours() + ":" + pad(dt.getMinutes());
+    }
+    function pad(n) {
+        return (n < 10) ? ("0" + n) : n;
+    }
+
     function loadContactList(contactList) {
         $.xmpp.getRoster(function (roster) {
         });
@@ -306,6 +324,27 @@ $(document).ready(function () {
         var roster = [];
         $.each($(data).find("item"), function (i, item) {
             var jItem = $(item);
+            $.xmpp.sendCommand("<iq to='" + jItem.attr("jid") + "' type='get' id='vc2'><vCard xmlns='vcard-temp'/></iq>", function(data){
+                $.each($(data).find("#vc2"), function(i,item){
+                    var vCard = $(item);
+                    var jid = jidTrim(vCard.attr('from'));
+                    var imgType = vCard.find('PHOTO').find('TYPE').text();
+                    var imgBinVal = vCard.find('PHOTO').find('BINVAL').text();
+                    $model.contact = $model.user.get('contacts').findWhere({jid: jid});
+                    $model.contact.set('avatarImgType', imgType);
+                    $model.contact.set('avatarBinVal', imgBinVal);
+                });
+
+                $(data).find('#vc2').each(function() {
+                    var jid = jidTrim($(this).attr('from'));
+                    var imgType = $(data).find('PHOTO').find('TYPE').text();
+                    var imgBinVal = $(data).find('PHOTO').find('BINVAL').text();
+                    $model.contact = $model.user.get('contacts').findWhere({jid: jid});
+                    $model.contact.set('avatarImgType', imgType);
+                    $model.contact.set('avatarBinVal', imgBinVal);
+                });
+
+            });
             roster.push({name: jItem.attr("name"), subscription: jItem.attr("subscription"), jid: jItem.attr("jid")});
         });
         $view.contactList.html("");
@@ -318,7 +357,7 @@ $(document).ready(function () {
                     $model.contact = $model.user.get('contacts').findWhere({jid: user.jid});
                 }
                 var contact = $("<li>");
-                contact.append("<a jid='" + $model.contact.get('jid') + "'  href='javascript:void(0)'>" + $model.contact.get('jid') + "</a><div class='state " + $model.contact.get('state') + "'></div>");
+                contact.append("<img width='40' height='40' src /><a jid='" + $model.contact.get('jid') + "'  href='javascript:void(0)'>" + $model.contact.get('jid') + "</a><div class='state " + $model.contact.get('state') + "'></div>");
                 contact.find("a").on('click', function () {
                     var jid = $(this).attr('jid');
                     var id = MD5.hexdigest(jid);
@@ -344,14 +383,18 @@ $(document).ready(function () {
     function openChat(options) {
         var id = MD5.hexdigest(options.to);
 
-        var chat = $("<div class='chat-window' id='" + id + "'><div class='header' >Chat with " + options.to + "</div><div class='conversation'></div><div><input type='text' /><button>Send</button></div></div>");
-        var input = chat.find("input");
+        var chat = $("<div class='chat-window' id='" + id + "'><div class='header' >Chat with " + options.to + "</div><div class='conversation'></div>" +
+                "<div class='input-msg-block'><textarea class='form-control' rows='3' placeholder='Input message here...' type='text' />" +
+                "<button class='btn btn-primary'>Send</button></div></div>");
+        var textarea = chat.find("textarea");
         var sendBut = chat.find("button");
         var conversation = chat.find(".conversation");
         sendBut.click(function () {
-            $.xmpp.sendMessage({to: options.to, body: input.val()});
-            conversation.append("<div>" + $.xmpp.jid + ": " + input.val() + "</div>");
-            input.val("");
+            $.xmpp.sendMessage({to: options.to, body: textarea.val()});
+            conversation.append("<div class='phrase-block'><div class='name'>" + $.xmpp.jid + "</div>" +
+                    "<div class='text'>" + textarea.val() + "</div>" +
+                    "<div class='timestamp'>" + getCurrentTime() + "</div></div>");
+            textarea.val("");
         });
         $("#container #right-block").append(chat);
     }
