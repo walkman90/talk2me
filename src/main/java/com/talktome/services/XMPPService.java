@@ -1,5 +1,6 @@
 package com.talktome.services;
 
+import com.talktome.beans.RegistrationVO;
 import com.talktome.beans.UserVO;
 import org.jivesoftware.smack.AccountManager;
 import org.jivesoftware.smack.SmackConfiguration;
@@ -10,7 +11,9 @@ import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.ReportedData;
 import org.jivesoftware.smackx.packet.VCard;
 import org.jivesoftware.smackx.search.UserSearchManager;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Encoder;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -44,18 +47,24 @@ public class XMPPService {
         }
     }
 
+    @Value("${talk2me.host}")
+    private String host;
+
+    @Value("${talk2me.url}")
+    private String hostUrl;
+
     private XMPPConnection connection;
 
     private XMPPConnection getConnection() {
         if (connection == null) {
             try {
-//                org.jivesoftware.smack.ConnectionConfiguration config = new  org.jivesoftware.smack.ConnectionConfiguration("localhost", 5222, "wsua-01832");
+//                org.jivesoftware.smack.ConnectionConfiguration config = new  org.jivesoftware.smack.ConnectionConfiguration("localhost", 5222, host);
 //                config.setReconnectionAllowed(true);
 //                config.setCompressionEnabled(false);
 //                config.setCustomSSLContext(SSLContext.getDefault());
 //                config.setSecurityMode(org.jivesoftware.smack.ConnectionConfiguration.SecurityMode.disabled);
                 SmackConfiguration.setPacketReplyTimeout(30000);
-                connection = new XMPPConnection("wsua-01832");
+                connection = new XMPPConnection(host);
                 connection.connect();
                // if(!connection.isAuthenticated()) {
                     connection.login("admin", "admin");
@@ -79,24 +88,26 @@ public class XMPPService {
         return connection;
     }
 
-    public void createAccount(String username, String password) throws XMPPException, IOException {
+    public void createAccount(RegistrationVO registrationVO) throws XMPPException, IOException {
         AccountManager accountManager = getConnection().getAccountManager();
         accountManager.supportsAccountCreation();
         Map<String, String> attr = new HashMap<String, String>();
-        attr.put("name", username);
-        attr.put("email", username+"@openfire.com");
-        accountManager.createAccount(username, password, attr);
+        attr.put("name", registrationVO.getUsername());
+        //attr.put("email", username+"@openfire.com");
+        accountManager.createAccount(registrationVO.getUsername(), registrationVO.getPassword(), attr);
 
-        XMPPConnection xmppConnection = new XMPPConnection("wsua-01832");
+        XMPPConnection xmppConnection = new XMPPConnection(host);
         xmppConnection.connect();
-        xmppConnection.login(username, password);
+        xmppConnection.login(registrationVO.getUsername(), registrationVO.getPassword());
         VCard vCard = new VCard();
-        URL imageURL = new URL("http://localhost:8080/resources/images/default_avatar.jpg");
-        BufferedImage originalImage= ImageIO.read(imageURL);
-        ByteArrayOutputStream baos=new ByteArrayOutputStream();
-        ImageIO.write(originalImage, "jpg", baos );
+        URL imageURL = new URL("http://"+hostUrl+"/resources/images/default_avatar.gif");
+        BufferedImage originalImage = ImageIO.read(imageURL);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(originalImage, "gif", baos );
 
         vCard.setAvatar(baos.toByteArray());
+        vCard.setFirstName(registrationVO.getFirstName());
+        vCard.setLastName(registrationVO.getLastName());
         vCard.save(xmppConnection);
         xmppConnection.disconnect();
     }
@@ -132,7 +143,14 @@ public class XMPPService {
                 if (iterator.hasNext()) {
                     user.setEmail(iterator.next().toString());
                 }
+                //load vCard Data
+                VCard userVCard = new VCard();
+                userVCard.load(getConnection(), user.getJid());
+                user.setvCard(userVCard);
 
+                BASE64Encoder encoder = new BASE64Encoder();
+                String imageString = encoder.encode(userVCard.getAvatar());
+                user.setAvatar(imageString);
 
                 Class userClass = user.getClass();
                 Field field = null;

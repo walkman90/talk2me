@@ -17,8 +17,12 @@
     /* -webkit-filter: blur(5px); */
     width: 100%;
     position: absolute;
-    height: 200px;
-    top: calc(50% - 100px);
+    height: 235px;
+    top: calc(50% - 117px);
     float: left;
     left: 0;
 }
+.login-box .sign-in-btn {
+    width: 100%;
+}
+

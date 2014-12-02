@@ -6,6 +6,7 @@ import com.talktome.services.XMPPService;
 import com.talktome.utils.Utils;
 import org.jivesoftware.smack.XMPPException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -24,12 +25,14 @@ public class HomeController {
     @Autowired
     XMPPService xmppService;
 
+    @Value("${talk2me.host}")
+    private String host;
+
 	@RequestMapping(value="/home", method = RequestMethod.GET)
 	public String render(ModelMap model, HttpSession session) throws XMPPException {
         UserVO user = (UserVO)session.getAttribute(Utils.SESSION_KEYS.USER.name());
 		model.addAttribute("user", user);
-        //ArrayList<UserVO> users = xmppService.findUserBy("test", XMPPService.UserColumn.USER_NAME);
-        //xmppService.createAccount("test3", "test3");
+        model.addAttribute("host", host);
 		return "home/view";
 	}
 

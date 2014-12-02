@@ -44,7 +44,7 @@ public class RegistrationController {
             model.addAttribute("registrationVO", registrationVO);
             return "registration/form";
         }
-        xmppService.createAccount(registrationVO.getUsername(), registrationVO.getPassword());
+        xmppService.createAccount(registrationVO);
         return "registration/success";
     }
 }

@@ -18,6 +18,10 @@ public class RegistrationVO {
     private String password;
     @NotEmpty
     private String passwordVerify;
+    @NotEmpty
+    private String firstName;
+    @NotEmpty
+    private String lastName;
 
     public String getUsername() {
         return username;
@@ -41,5 +45,21 @@ public class RegistrationVO {
 
     public void setPasswordVerify(String passwordVerify) {
         this.passwordVerify = passwordVerify;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 }

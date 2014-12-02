@@ -519,7 +519,9 @@
                 self.listen();
                 if(callback != null)
                         callback(data);
-            }, 'text');
+            }, 'text').fail(function(data){
+                $.xmpp.onError({error:"Send Command Failed", data:data});
+            });
         },
 
         /**

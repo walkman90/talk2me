@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="<c:url value="/resources/vendor/font-awesome-4.2.0/css/font-awesome.min.css" />">
     <link rel="stylesheet" href="<c:url value="/resources/vendor/bootstrap/css/bootstrap.min.css" />">
     <link rel="stylesheet" href="<c:url value="/resources/vendor/bootstrap/css/bootstrap-theme.min.css" />">
-    <title>Basic connection</title>
+    <title>Welcome!</title>
 </head>
 
 </head>
@@ -30,19 +30,26 @@
 <script type="text/javascript">
     $(document).ready(function () {
         var container = $('#container .login-container');
-        container.find('form').submit(function () {
-            var form = $(this);
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: form.serialize(),
-                success: function (data) {
-                    container.html(data);
-                }
-            });
+        init(container);
 
-            return false;
-        });
+        function init(container) {
+            container.find('form').submit(function () {
+                var form = $(this);
+                form.find('button').attr('disabled', true);
+                form.find('button i').toggleClass('fa-sign-in fa-spin fa-spinner');
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    success: function (data) {
+                        container.html(data);
+                        init(container)
+                    }
+                });
+
+                return false;
+            });
+        }
     });
 
 
